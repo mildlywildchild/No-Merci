@@ -165,32 +165,38 @@ public class Player {
     public char decide(int count, Card card, PlayerManager pm, Player me) {
         char output = 'N';
 
+        // If sure-win, keep taking cards
         if (sureWin) {
             decisions.add('Y');
             return 'Y';
         }
 
+        // If no more chips, can only take
         if (numOfChips == 0) {
             decisions.add('Y');
             return 'Y';
         }
 
+        // If net points of card is zero, take
         if (card.getNumber() - card.getChips() <= 0) {
             decisions.add('Y');
             return 'Y';
         }
 
+        // First card played
         if (count == 1) {
+            // If I am player 4 or 5, it's a sure-win.
             if (id == 4 || id == 5) {
                 sureWin = true;
             }
             output = 'Y';
-        } else if (pm.numPlayersWithCards() == 1 && card.getChips() >= 5) {
+        } else if (pm.numPlayersWithCards() == 1 && card.getChips() >= 5) { // If only one player has taken cards and I have >= 5 chips, take.
+            // If I'm the only player who has cards, it's a sure-win.
             if (cards.size() > 0) {
                 sureWin = true;
             }
             output = 'Y';
-        } else {
+        } else { // More than 1 player has taken cards: Go to method useStrategy().
             output = useStrategy(card, pm, me);
         }
 
@@ -201,26 +207,30 @@ public class Player {
     public char useStrategy(Card card, PlayerManager pm, Player me) {
         char output = 'N';
         System.out.println("Using strategy.");
-        if (cards.size() == 0) {
+        if (cards.size() == 0) { // If I haven't taken any cards
+            // And the card has potential to expand 5 above or below. (No card within this range has been taken by another player.)
             if (pm.cardHasRange(card, 5)) {
                 System.out.println("First card with range");
                 output = 'Y';
             }
-        } else if (cards.size() == 1) {
+        } else if (cards.size() == 1) { // If I have taken a card
+            // And the open card is within my range, take it.
             if (isInRange(card, 5)) {
                 System.out.println("Second card and within range");
                 output = 'Y';
             }
-        } else if (cards.size() > 1) {
+        } else if (cards.size() > 1) { // If I have taken more than one card
+            // And the card is within my sequence.
             if (isWithinSequence(card)) {
                 System.out.println("Within sequence");
+                // And I can't milk the card
                 if (!pm.canMilk(card, me, isLastCard(card))) {
                     System.out.println("Cannot milk.");
                     output = 'Y';
-                } else if (numOfChips < 6 && card.getNumber() == 35) {
+                } else if (numOfChips < 6 && card.getNumber() == 35) { // I can milk the card
                     System.out.println("A");
                     output = 'N';
-                } else if (numOfChips > 6 && card.getNumber() == 35) {
+                } else if (numOfChips > 6 && card.getNumber() == 35) { // Can't afford to milk so soon(?)
                     if (card.getNumber() - card.getChips() <= 9) {
                         System.out.println("B");
                         output = 'Y';
@@ -234,10 +244,11 @@ public class Player {
                         output = 'Y';
                     }
                 } else if (numOfChips > 5) {
+                    // If I'm missing more than 3 cards, I can't milk it.
                     if (missingCards() > 3) {
                         System.out.println("E");
                         output = 'Y';
-                    } else if (missingCards() == 2 || missingCards() == 3) {
+                    } else if (missingCards() == 2 || missingCards() == 3) { // If I'm missing 2 or 3 cards, milk one round.
                         if (pm.canMilk(card, me, false)) {
                             System.out.println("F");
                             output = 'N';
@@ -247,14 +258,14 @@ public class Player {
                             System.out.println("G");
                             output = 'Y';
                         }
-                    } else if (missingCards() == 1) {
+                    } else if (missingCards() == 1) { // If I'm only missing one card, milk until one player has no more chips.
                         if (pm.canMilk(card, me, true) && card.getNumber() - card.getChips() >= 5) {
                             System.out.println("H");
                             output = 'N';
                         }
                     }
                 }
-            } else {
+            } else { // Card not within my sequence
                 if (pm.cardHasRange(card, 3) && missingCards() < 3) {
                     // incorrect
                     System.out.println("I");
@@ -265,6 +276,7 @@ public class Player {
                 }
             }
         } else {
+            // If my sequence has been completed, start a new range if it has potential.
             if (missingCards() == 0 && pm.cardHasRange(card, 4)) {
                 System.out.println("Range completed and new card has range");
                 output = 'Y';
@@ -274,44 +286,4 @@ public class Player {
         decisions.add('Y');
         return output;
     }
-
-    // public char useStrategy(Card card, PlayerManager pm) {
-    //     System.out.println("Using strategy");
-    //     if (cards.size() == 0 && pm.cardHasRange(card, 4)) {
-    //         System.out.println("A");
-    //         return 'Y';
-    //     } else if (cards.size() == 1 && isInRange(card, 5)) {
-    //         System.out.println("B");
-    //         return 'Y';
-    //     } else if (cards.size() > 1) {
-    //         if (isWithinSequence(card)) {
-    //             if(!pm.canMilk(card, false)) {
-    //                 System.out.println("C");
-    //                 return 'Y';
-    //             } else if (card.getNumber() == 35) {
-    //                 System.out.println("D");
-    //                 // not complete
-    //                 return 'N';
-    //             } else if (numOfChips <= 6 && card.getNumber() < 14){
-    //                 return 'Y';
-    //             } else if (numOfChips < 6 && card.getNumber() >= 14) {
-    //                 return 'N';
-    //             } else if (pm.canMilk(card, true)) {
-    //                 return 'N';
-    //             } else {
-    //                 return 'Y';
-    //             }
-    //         } else {
-    //             if (isInRange(card, 2) || (isInRange(card, 5) && pm.cardHasRange(card, 3))) {
-    //                 System.out.println("E");
-    //                 return 'Y';
-    //             } else if (card.getChips() == card.getNumber()) {
-    //                 System.out.println("F");
-    //                 return 'Y';
-    //             }
-    //         }
-    //     }
-    //     System.out.println("Didn't meet any conditions");
-    //     return 'N';
-    // }
 }
