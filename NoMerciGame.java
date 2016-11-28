@@ -66,7 +66,7 @@ public class NoMerciGame {
                 System.out.print("Take card? [Y/N] >");
                 if (currentPlayer.isComputer()) {
                     // in progress
-                    input = currentPlayer.decide(count, card, playerMgr);
+                    input = currentPlayer.decide(count, card, playerMgr, currentPlayer);
                 } else {
                     input = sc.next().toUpperCase().charAt(0);
                     sc.nextLine();

@@ -17,7 +17,7 @@ public class PlayerManager {
 
         for (int i = 0; i < numPlayers; i++) {
             Player p = players.get(i);
-            // p.setPlayerAsPC();
+            p.setPlayerAsPC(true);
             // if (i % 2 == 1) {
             //     p.setPlayerAsPC();
             // }
@@ -29,8 +29,8 @@ public class PlayerManager {
             }
         }
 
-        int rdmID = rdm.nextInt(numPlayers);
-        players.get(rdmID).setPlayerAsPC();
+        // int rdmID = rdm.nextInt(numPlayers);
+        // players.get(rdmID).setPlayerAsPC(false);
     }
 
     // Getters
@@ -104,16 +104,14 @@ public class PlayerManager {
         return true;
     }
 
-    public boolean canMilk(Card openCard, boolean finalCard) {
-        int n = openCard.getNumber();
-
-        if (n <= openCard.getChips() + 5 && openCard.getNumber() > 10) {
+    public boolean canMilk(Card openCard, Player exception, boolean finalCard) {
+        if (openCard.getNumber() > 10) {
             int limit = 6;
             if (finalCard) {
                 limit = 1;
             }
             for (Player p : players) {
-                if (p.getNumChips() < limit) {
+                if (p != exception && p.getNumChips() < limit) {
                     return false;
                 }
             }
